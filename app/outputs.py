@@ -37,9 +37,9 @@ class Output():
         hot_colour = '\u001b[31m'
         cold_colour = '\u001b[36m'
 
-        output = "{}:\t\n".format(market_pair)
+        output = f"{market_pair}:\t\n"
         for indicator_type in results:
-            output += '\n{}:\t'.format(indicator_type)
+            output += f'\n{indicator_type}:\t'
             for indicator in results[indicator_type]:
                 for i, analysis in enumerate(results[indicator_type][indicator]):
                     if analysis['result'].shape[0] == 0:
@@ -57,17 +57,11 @@ class Output():
                             colour_code = cold_colour
 
                     if indicator_type == 'crossovers':
-                        key_signal = '{}_{}'.format(
-                            analysis['config']['key_signal'],
-                            analysis['config']['key_indicator_index']
-                        )
+                        key_signal = f"{analysis['config']['key_signal']}_{analysis['config']['key_indicator_index']}"
 
                         key_value = analysis['result'].iloc[-1][key_signal]
 
-                        crossed_signal = '{}_{}'.format(
-                            analysis['config']['crossed_signal'],
-                            analysis['config']['crossed_indicator_index']
-                        )
+                        crossed_signal = f"{analysis['config']['crossed_signal']}_{analysis['config']['crossed_indicator_index']}"
 
                         crossed_value = analysis['result'].iloc[-1][crossed_signal]
 
@@ -77,15 +71,9 @@ class Output():
                         if isinstance(crossed_value, float):
                             crossed_value = format(crossed_value, '.8f')
 
-                        formatted_string = '{}/{}'.format(key_value, crossed_value)
-                        output += "{}{}: {}{} \t".format(
-                            colour_code,
-                            '{} #{}'.format(indicator, i),
-                            formatted_string,
-                            normal_colour
-                        )
+                        formatted_string = f'{key_value}/{crossed_value}'
                     else:
-                        formatted_values = list()
+                        formatted_values = []
                         for signal in analysis['config']['signal']:
                             value = analysis['result'].iloc[-1][signal]
                             if isinstance(value, float):
@@ -94,13 +82,7 @@ class Output():
                                 formatted_values.append(value)
                             formatted_string = '/'.join(formatted_values)
 
-                        output += "{}{}: {}{} \t".format(
-                            colour_code,
-                            '{} #{}'.format(indicator, i),
-                            formatted_string,
-                            normal_colour
-                        )
-
+                    output += f"{colour_code}{indicator} #{i}: {formatted_string}{normal_colour} \t"
         output += '\n\n'
         return output
 
@@ -125,17 +107,11 @@ class Output():
                     value = str()
 
                     if indicator_type == 'crossovers':
-                        key_signal = '{}_{}'.format(
-                            analysis['config']['key_signal'],
-                            analysis['config']['key_indicator_index']
-                        )
+                        key_signal = f"{analysis['config']['key_signal']}_{analysis['config']['key_indicator_index']}"
 
                         key_value = analysis['result'].iloc[-1][key_signal]
 
-                        crossed_signal = '{}_{}'.format(
-                            analysis['config']['crossed_signal'],
-                            analysis['config']['crossed_indicator_index']
-                        )
+                        crossed_signal = f"{analysis['config']['crossed_signal']}_{analysis['config']['crossed_indicator_index']}"
 
                         crossed_value = analysis['result'].iloc[-1][crossed_signal]
 
@@ -170,7 +146,7 @@ class Output():
                         is_cold
                     ])
 
-                    output += '\n{}'.format(new_output)
+                    output += f'\n{new_output}'
 
         return output
 
@@ -196,6 +172,4 @@ class Output():
                     )[-1]
 
         formatted_results = { 'pair': market_pair, 'results': results }
-        output = json.dumps(formatted_results)
-        output += '\n'
-        return output
+        return json.dumps(formatted_results) + '\n'

@@ -81,14 +81,14 @@ class Ichimoku(IndicatorUtils):
         ichimoku_values['is_cold'] = False
 
         for index in range(0, ichimoku_df_size):
-            span_hot = ichimoku_values['leading_span_a'][index] > ichimoku_values['leading_span_b'][index]
-            close_hot = dataframe['close'][index] > ichimoku_values['leading_span_a'][index]
             if hot_thresh:
+                span_hot = ichimoku_values['leading_span_a'][index] > ichimoku_values['leading_span_b'][index]
+                close_hot = dataframe['close'][index] > ichimoku_values['leading_span_a'][index]
                 ichimoku_values.at[ichimoku_values.index[index], 'is_hot'] = span_hot and close_hot
 
-            span_cold = ichimoku_values['leading_span_a'][index] < ichimoku_values['leading_span_b'][index]
-            close_cold = dataframe['close'][index] < ichimoku_values['leading_span_a'][index]
             if cold_thresh:
+                span_cold = ichimoku_values['leading_span_a'][index] < ichimoku_values['leading_span_b'][index]
+                close_cold = dataframe['close'][index] < ichimoku_values['leading_span_a'][index]
                 ichimoku_values.at[ichimoku_values.index[index], 'is_cold'] = span_cold and close_cold
 
         return ichimoku_values

@@ -21,7 +21,7 @@ class Configuration():
             with open('config.yml', 'r') as config_file:
                 user_config = yaml.load(config_file)
         else:
-            user_config = dict()
+            user_config = {}
 
         if 'settings' in user_config:
             self.settings = {**default_config['settings'], **user_config['settings']}
@@ -48,11 +48,7 @@ class Configuration():
         else:
             self.crossovers = default_config['crossovers']
 
-        if 'exchanges' in user_config:
-            self.exchanges = user_config['exchanges']
-        else:
-            self.exchanges = dict()
-
+        self.exchanges = user_config['exchanges'] if 'exchanges' in user_config else {}
         for exchange in ccxt.exchanges:
             if exchange not in self.exchanges:
                 self.exchanges[exchange] = {

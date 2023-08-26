@@ -29,5 +29,5 @@ class WebhookNotifier(NotifierUtils):
         else:
             request = requests.post(self.url, json=message)
 
-        if not request.status_code == requests.codes.ok:
+        if request.status_code != requests.codes.ok:
             self.logger.error("Request failed: %s - %s", request.status_code, request.content)

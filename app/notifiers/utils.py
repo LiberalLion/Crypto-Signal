@@ -22,7 +22,7 @@ class NotifierUtils():
             list: The chunked message.
         """
 
-        chunked_message = list()
+        chunked_message = []
         if len(message) > max_message_size:
             split_message = message.splitlines(keepends=True)
             chunk = ''

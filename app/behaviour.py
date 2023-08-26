@@ -73,16 +73,16 @@ class Behaviour():
             output_mode (str): Which console output mode to use.
         """
 
-        new_result = dict()
+        new_result = {}
         for exchange in market_data:
             self.logger.info("Beginning analysis of %s", exchange)
             if exchange not in new_result:
-                new_result[exchange] = dict()
+                new_result[exchange] = {}
 
             for market_pair in market_data[exchange]:
                 self.logger.info("Beginning analysis of %s", market_pair)
                 if market_pair not in new_result[exchange]:
-                    new_result[exchange][market_pair] = dict()
+                    new_result[exchange][market_pair] = {}
 
                 new_result[exchange][market_pair]['indicators'] = self._get_indicator_results(
                     exchange,
@@ -124,8 +124,8 @@ class Behaviour():
         """
 
         indicator_dispatcher = self.strategy_analyzer.indicator_dispatcher()
-        results = { indicator: list() for indicator in self.indicator_conf.keys() }
-        historical_data_cache = dict()
+        results = {indicator: [] for indicator in self.indicator_conf.keys()}
+        historical_data_cache = {}
 
         for indicator in self.indicator_conf:
             if indicator not in indicator_dispatcher:
@@ -181,8 +181,8 @@ class Behaviour():
         """
 
         informant_dispatcher = self.strategy_analyzer.informant_dispatcher()
-        results = { informant: list() for informant in self.informant_conf.keys() }
-        historical_data_cache = dict()
+        results = {informant: [] for informant in self.informant_conf.keys()}
+        historical_data_cache = {}
 
         for informant in self.informant_conf:
             if informant not in informant_dispatcher:
@@ -235,7 +235,7 @@ class Behaviour():
         """
 
         crossover_dispatcher = self.strategy_analyzer.crossover_dispatcher()
-        results = { crossover: list() for crossover in self.crossover_conf.keys() }
+        results = {crossover: [] for crossover in self.crossover_conf.keys()}
 
         for crossover in self.crossover_conf:
             if crossover not in crossover_dispatcher:
@@ -278,7 +278,7 @@ class Behaviour():
             list: A list of OHLCV data.
         """
 
-        historical_data = list()
+        historical_data = []
         try:
             historical_data = self.exchange_interface.get_historical_data(
                 market_pair,

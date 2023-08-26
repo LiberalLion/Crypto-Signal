@@ -22,17 +22,14 @@ class ExchangeInterface():
         """
 
         self.logger = structlog.get_logger()
-        self.exchanges = dict()
+        self.exchanges = {}
 
         # Loads the exchanges using ccxt.
         for exchange in exchange_config:
             if exchange_config[exchange]['required']['enabled']:
-                new_exchange = getattr(ccxt, exchange)({
-                    "enableRateLimit": True
-                })
-
-                # sets up api permissions for user if given
-                if new_exchange:
+                if new_exchange := getattr(ccxt, exchange)(
+                    {"enableRateLimit": True}
+                ):
                     self.exchanges[new_exchange.id] = new_exchange
                 else:
                     self.logger.error("Unable to load exchange %s", new_exchange)
@@ -60,11 +57,7 @@ class ExchangeInterface():
         try:
             if time_unit not in self.exchanges[exchange].timeframes:
                 raise ValueError(
-                    "{} does not support {} timeframe for OHLCV data. Possible values are: {}".format(
-                        exchange,
-                        time_unit,
-                        list(self.exchanges[exchange].timeframes)
-                    )
+                    f"{exchange} does not support {time_unit} timeframe for OHLCV data. Possible values are: {list(self.exchanges[exchange].timeframes)}"
                 )
         except AttributeError:
             self.logger.error(
@@ -132,7 +125,7 @@ class ExchangeInterface():
         if not exchanges:
             exchanges = self.exchanges
 
-        exchange_markets = dict()
+        exchange_markets = {}
         for exchange in exchanges:
             exchange_markets[exchange] = self.exchanges[exchange].load_markets()
 

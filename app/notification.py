@@ -26,9 +26,9 @@ class Notifier():
 
         self.logger = structlog.get_logger()
         self.notifier_config = notifier_config
-        self.last_analysis = dict()
+        self.last_analysis = {}
 
-        enabled_notifiers = list()
+        enabled_notifiers = []
         self.logger = structlog.get_logger()
         self.twilio_configured = self._validate_required_config('twilio', notifier_config)
         if self.twilio_configured:
@@ -193,19 +193,21 @@ class Notifier():
             new_analysis (dict): The new_analysis to send.
         """
 
-        if self.webhook_configured:
-            for exchange in new_analysis:
-                for market in new_analysis[exchange]:
-                    for indicator_type in new_analysis[exchange][market]:
-                        for indicator in new_analysis[exchange][market][indicator_type]:
-                            for index, analysis in enumerate(new_analysis[exchange][market][indicator_type][indicator]):
-                                analysis_dict = analysis['result'].to_dict(orient='records')
-                                if analysis_dict:
-                                    new_analysis[exchange][market][indicator_type][indicator][index] = analysis_dict[-1]
-                                else:
-                                    new_analysis[exchange][market][indicator_type][indicator][index] = ''
+        if not self.webhook_configured:
+            return
+        for exchange in new_analysis:
+            for market in new_analysis[exchange]:
+                for indicator_type in new_analysis[exchange][market]:
+                    for indicator in new_analysis[exchange][market][indicator_type]:
+                        for index, analysis in enumerate(new_analysis[exchange][market][indicator_type][indicator]):
+                            if analysis_dict := analysis['result'].to_dict(
+                                orient='records'
+                            ):
+                                new_analysis[exchange][market][indicator_type][indicator][index] = analysis_dict[-1]
+                            else:
+                                new_analysis[exchange][market][indicator_type][indicator][index] = ''
 
-            self.webhook_client.notify(new_analysis)
+        self.webhook_client.notify(new_analysis)
 
     def notify_stdout(self, new_analysis):
         """Send a notification via the stdout notifier
@@ -233,11 +235,7 @@ class Notifier():
             bool: Is the notifier configured?
         """
 
-        notifier_configured = True
-        for _, val in notifier_config[notifier]['required'].items():
-            if not val:
-                notifier_configured = False
-        return notifier_configured
+        return all(val for _, val in notifier_config[notifier]['required'].items())
 
 
     def _indicator_message_templater(self, new_analysis, template):
@@ -266,36 +264,27 @@ class Notifier():
                             if analysis['result'].shape[0] == 0:
                                 continue
 
-                            values = dict()
+                            values = {}
 
-                            if indicator_type == 'indicators':
+                            if indicator_type == 'crossovers':
+                                latest_result = analysis['result'].iloc[-1]
+                                key_signal = f"{analysis['config']['key_signal']}_{analysis['config']['key_indicator_index']}"
+                                values[key_signal] = analysis['result'].iloc[-1][key_signal]
+                                if isinstance(values[key_signal], float):
+                                        values[key_signal] = format(values[key_signal], '.8f')
+
+                                crossed_signal = f"{analysis['config']['crossed_signal']}_{analysis['config']['crossed_indicator_index']}"
+                                values[crossed_signal] = analysis['result'].iloc[-1][crossed_signal]
+                                if isinstance(values[crossed_signal], float):
+                                        values[crossed_signal] = format(values[crossed_signal], '.8f')
+
+                            elif indicator_type == 'indicators':
                                 for signal in analysis['config']['signal']:
                                     latest_result = analysis['result'].iloc[-1]
 
                                     values[signal] = analysis['result'].iloc[-1][signal]
                                     if isinstance(values[signal], float):
                                         values[signal] = format(values[signal], '.8f')
-                            elif indicator_type == 'crossovers':
-                                latest_result = analysis['result'].iloc[-1]
-
-                                key_signal = '{}_{}'.format(
-                                    analysis['config']['key_signal'],
-                                    analysis['config']['key_indicator_index']
-                                )
-
-                                crossed_signal = '{}_{}'.format(
-                                    analysis['config']['crossed_signal'],
-                                    analysis['config']['crossed_indicator_index']
-                                )
-
-                                values[key_signal] = analysis['result'].iloc[-1][key_signal]
-                                if isinstance(values[key_signal], float):
-                                        values[key_signal] = format(values[key_signal], '.8f')
-
-                                values[crossed_signal] = analysis['result'].iloc[-1][crossed_signal]
-                                if isinstance(values[crossed_signal], float):
-                                        values[crossed_signal] = format(values[crossed_signal], '.8f')
-
                             status = 'neutral'
                             if latest_result['is_hot']:
                                 status = 'hot'
